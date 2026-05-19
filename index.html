@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stilmittel Quiz</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f1f5f9;--card:#fff;--border:#e2e8f0;
+  --text:#1e293b;--muted:#64748b;--faint:#94a3b8;
+  --blue:#4f46e5;--blue-h:#4338ca;--blue-tint:#eef2ff;
+  --green:#16a34a;--green-bg:#dcfce7;--green-border:#86efac;
+  --red:#dc2626;--red-bg:#fee2e2;--red-border:#fca5a5;
+  --radius:12px;--radius-sm:8px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:1.5rem 1rem 3rem}
+.app{max-width:620px;margin:0 auto}
+
+/* HOME */
+.home-head{margin-bottom:2rem;padding-top:1rem}
+.home-head h1{font-size:1.9rem;font-weight:800;letter-spacing:-.03em;line-height:1.15}
+.home-head p{color:var(--muted);margin-top:.375rem;font-size:.95rem}
+.mode-grid{display:grid;gap:.75rem}
+.mode-btn{display:block;width:100%;text-align:left;padding:1.375rem 1.5rem;background:var(--card);border:2px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:border-color .15s,box-shadow .15s,transform .15s;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.mode-btn:hover{border-color:var(--blue);box-shadow:0 4px 14px rgba(79,70,229,.15);transform:translateY(-1px)}
+.mode-chip{display:inline-block;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;background:var(--blue-tint);color:var(--blue);padding:.2em .55em;border-radius:4px;margin-bottom:.5rem}
+.mode-title{font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:.2rem}
+.mode-desc{font-size:.85rem;color:var(--muted)}
+.home-foot{margin-top:1.25rem;text-align:center;font-size:.78rem;color:var(--faint)}
+
+/* QUIZ */
+.quiz-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:.625rem;font-size:.85rem;color:var(--muted)}
+.quiz-score{font-weight:700;color:var(--blue)}
+.progress-track{height:4px;background:var(--border);border-radius:99px;overflow:hidden;margin-bottom:1.5rem}
+.progress-fill{height:100%;background:var(--blue);border-radius:99px;transition:width .4s cubic-bezier(.4,0,.2,1)}
+.q-card{background:var(--card);border-radius:var(--radius);box-shadow:0 1px 3px rgba(0,0,0,.07);padding:1.75rem;margin-bottom:1rem}
+.q-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--faint);margin-bottom:.875rem}
+.q-text{font-size:1.05rem;line-height:1.7;color:var(--text)}
+.q-text.sentence{font-style:italic;border-left:3px solid var(--blue);padding-left:1rem;color:#2d3a8c}
+.options{display:grid;grid-template-columns:1fr 1fr;gap:.625rem}
+.opt{padding:.875rem 1rem;background:var(--card);border:2px solid var(--border);border-radius:var(--radius-sm);font-size:.9rem;font-weight:500;cursor:pointer;text-align:center;line-height:1.3;color:var(--text);transition:border-color .12s,background .12s,transform .1s}
+.opt:hover:not(:disabled){border-color:var(--blue);background:var(--blue-tint);transform:translateY(-1px)}
+.opt:disabled{cursor:default}
+.opt.correct{border-color:var(--green);background:var(--green-bg);color:var(--green)}
+.opt.wrong{border-color:var(--red);background:var(--red-bg);color:var(--red)}
+.feedback{margin-top:.875rem;padding:.875rem 1rem;border-radius:var(--radius-sm);font-size:.875rem;line-height:1.55;display:none}
+.feedback.show{display:block}
+.feedback.correct{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.feedback.wrong{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+.next-btn{width:100%;padding:.875rem;background:var(--blue);color:#fff;border:none;border-radius:var(--radius-sm);font-size:.975rem;font-weight:600;cursor:pointer;margin-top:.625rem;transition:background .15s,transform .1s;display:none}
+.next-btn.show{display:block}
+.next-btn:hover{background:var(--blue-h);transform:translateY(-1px)}
+.back-link{display:inline-block;margin-bottom:1.25rem;font-size:.8rem;color:var(--muted);cursor:pointer;border:none;background:none;padding:0}
+.back-link:hover{color:var(--blue)}
+
+/* RESULTS */
+.res-card{background:var(--card);border-radius:var(--radius);box-shadow:0 1px 3px rgba(0,0,0,.07);padding:2.5rem 2rem;text-align:center}
+.res-title{font-size:1.4rem;font-weight:800;letter-spacing:-.02em;margin-bottom:1.5rem}
+.pct{font-size:5rem;font-weight:900;letter-spacing:-.05em;line-height:1;color:var(--blue)}
+.pct-sub{font-size:1rem;color:var(--muted);margin-top:.25rem}
+.res-msg{font-size:1rem;font-weight:600;color:var(--text);margin:1.25rem 0 1.75rem}
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:.625rem;margin-bottom:2rem}
+.stat{background:var(--bg);border-radius:var(--radius-sm);padding:.875rem .5rem;text-align:center}
+.stat-n{font-size:1.75rem;font-weight:800;line-height:1}
+.stat-n.c{color:var(--green)}.stat-n.w{color:var(--red)}.stat-n.t{color:var(--blue)}
+.stat-l{font-size:.72rem;color:var(--faint);margin-top:.2rem}
+.btn-row{display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap}
+.btn-p{padding:.75rem 1.5rem;background:var(--blue);color:#fff;border:none;border-radius:var(--radius-sm);font-size:.9rem;font-weight:600;cursor:pointer;transition:background .15s}
+.btn-p:hover{background:var(--blue-h)}
+.btn-s{padding:.75rem 1.5rem;background:var(--card);color:var(--muted);border:2px solid var(--border);border-radius:var(--radius-sm);font-size:.9rem;font-weight:600;cursor:pointer;transition:border-color .15s,color .15s}
+.btn-s:hover{border-color:var(--blue);color:var(--blue)}
+
+@media(max-width:460px){
+  .options{grid-template-columns:1fr}
+  .pct{font-size:3.75rem}
+  .home-head h1{font-size:1.5rem}
+}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<script>
+const FIGURES = [
+  {
+    name:"Allegorie",
+    definition:"Eine Allegorie ist die bildhafte Darstellung eines abstrakten Begriffs durch eine konkrete Person, Handlung oder Szene. Das gesamte Bild trägt eine übertragene, symbolische Bedeutung, die über das Wörtliche hinausgeht.",
+    sentences:[
+      "Der Sensenmann schreitet durch die Lande und holt sich ohne Unterschied Arme wie Reiche.",
+      "Frau Fortuna dreht unerbittlich ihr Rad: Wer heute oben sitzt, liegt morgen unten.",
+      "Das Schiff des Staates kämpft gegen die Wogen der Krise – Kapitän und Mannschaft streiten, während der Sturm wächst.",
+      "Die blinde Justitia hält ihre Waage und ihr Schwert, um ohne Ansehen der Person zu richten.",
+      "Mutter Natur legt ihren grünen Mantel ab und hüllt sich in das weiße Kleid des Winters.",
+    ]
+  },
+  {
+    name:"Alliteration",
+    definition:"Bei der Alliteration beginnen zwei oder mehr aufeinanderfolgende oder nahe beieinanderstehende Wörter mit demselben Anlaut (Buchstaben oder Laut). Sie erzeugt einen Klangeffekt und prägt sich leicht ein.",
+    sentences:[
+      "Milch macht müde Männer munter.",
+      "Mit Mann und Maus ging das Schiff unter.",
+      "Fischer Fritz fischt frische Fische.",
+      "Durch Dick und Dünn gingen sie gemeinsam.",
+      "Wer wagt, der gewinnt – so lautet die goldene Regel.",
+    ]
+  },
+  {
+    name:"Anapher",
+    definition:"Bei der Anapher wird ein Wort oder eine Wortgruppe am Anfang aufeinanderfolgender Sätze, Verse oder Abschnitte wiederholt. Sie verleiht dem Text besonderen Nachdruck und einen eindringlichen Rhythmus.",
+    sentences:[
+      "Ich fordere Gerechtigkeit. Ich fordere Gleichheit. Ich fordere Freiheit.",
+      "Kein Schlaf, kein Essen, kein Trinken – so verbrachte er die Nacht.",
+      "Er lief und lief und lief, bis seine Kräfte versagten.",
+      "Mit der Unwissenheit fängt die Knechtschaft an. Mit dem Wissen fängt die Freiheit an.",
+      "Alles verloren, alles verbrannt, alles vergessen – so fühlte sie sich am Ende.",
+    ]
+  },
+  {
+    name:"Antithese",
+    definition:"Die Antithese stellt zwei gegensätzliche Begriffe, Aussagen oder Gedanken einander gegenüber. Der Kontrast schärft die jeweilige Aussage und macht sie einprägsamer.",
+    sentences:[
+      "Der Geist ist willig, aber das Fleisch ist schwach.",
+      "Die Einen schlafen, während die Anderen wachen.",
+      "Im Glück bescheiden, im Unglück standhaft – so soll man sein.",
+      "Arm und reich, jung und alt – sie alle kamen zum Fest.",
+      "Heute so, morgen so – auf seinen Entschluss war kein Verlass.",
+    ]
+  },
+  {
+    name:"Ellipse",
+    definition:"Eine Ellipse ist die bewusste Auslassung von Wörtern, die aus dem Kontext erschlossen werden können. Sie verdichtet die Aussage und verleiht ihr Dynamik oder Knappheit.",
+    sentences:[
+      "Je eher, desto besser.",
+      "Ende gut, alles gut.",
+      "Nichts wie weg!",
+      "Kein Wort mehr!",
+      "Lieber arm und glücklich als reich und unglücklich.",
+    ]
+  },
+  {
+    name:"Enjambement",
+    definition:"Das Enjambement (Zeilensprung) ist ein lyrisches Mittel: Ein Satz oder eine Sinneinheit endet nicht am Zeilenende, sondern setzt sich in der nächsten Zeile fort. Die Syntax überbrückt den Verseinschnitt.",
+    sentences:[
+      "Er sah sie an und wusste nicht,\nwas er ihr sagen sollte in dieser Nacht.",
+      "Die Blätter fielen lautlos auf\nden feuchten Boden des alten Waldes.",
+      "In dieser langen, dunklen\nNacht verlor er allen Mut.",
+      "Ich denke dein, wenn mir der\nSonne Schimmer vom Meere strahlt.",
+      "Die Kinder rannten froh und\nausgelassen durch den herbstlichen Park.",
+    ]
+  },
+  {
+    name:"Epipher",
+    definition:"Die Epipher ist das Gegenstück zur Anapher: Ein Wort oder eine Wortgruppe wird am Ende aufeinanderfolgender Sätze oder Verse wiederholt. Sie erzeugt einen eindringlichen Nachhall und Rhythmus.",
+    sentences:[
+      "Er lachte, sie lachte, das ganze Zimmer lachte.",
+      "Das Volk schweigt, die Minister schweigen, die Presse schweigt.",
+      "Ich will es nicht, ich kann es nicht, ich werde es nicht.",
+      "Er kämpfte für sie, er lebte für sie, er starb für sie.",
+      "Im Sommer blüht es, im Herbst verwelkt es, im Winter stirbt es.",
+    ]
+  },
+  {
+    name:"Euphemismus",
+    definition:"Ein Euphemismus ist eine beschönigende oder abschwächende Umschreibung für etwas Unangenehmes, Schockierendes oder Tabuisiertes. Er mildert die Wirkung durch vorsichtigere Formulierungen.",
+    sentences:[
+      "Er ist von uns gegangen. (statt: Er ist gestorben.)",
+      "Die Mitarbeiterin wurde freigesetzt. (statt: entlassen)",
+      "Die Regierung spricht von Kollateralschäden. (statt: zivile Opfer)",
+      "Sie befindet sich in einer schwierigen finanziellen Lage. (statt: Sie ist pleite.)",
+      "Das Gebäude wurde einer Sonderbehandlung unterzogen. (statt: abgerissen)",
+    ]
+  },
+  {
+    name:"Hyperbel",
+    definition:"Die Hyperbel ist eine starke Übertreibung, die nicht wörtlich gemeint ist. Sie dient dazu, etwas besonders eindringlich, anschaulich oder witzig auszudrücken.",
+    sentences:[
+      "Das hab ich dir schon tausendmal gesagt!",
+      "Ich sterbe vor Hunger!",
+      "Wir haben uns eine Ewigkeit nicht gesehen.",
+      "Er könnte ein ganzes Pferd aufessen.",
+      "Das weiß doch jedes Kind auf der Welt.",
+    ]
+  },
+  {
+    name:"Hypotaxe",
+    definition:"Die Hypotaxe bezeichnet eine satzgefügeartige Konstruktion mit mehreren eingebetteten Nebensätzen. Haupt- und Nebensätze sind durch Konjunktionen und Relativpronomen eng miteinander verknüpft.",
+    sentences:[
+      "Obwohl er wusste, dass die Aufgabe schwierig war, und obgleich er kaum geschlafen hatte, beschloss er dennoch, nicht aufzugeben.",
+      "Als er nach Hause kam, in der dunklen Nacht, die ihn an frühere Zeiten erinnerte, bemerkte er, dass das Licht im Wohnzimmer noch brannte.",
+      "Der Schüler, der sich trotz der langen Ferien intensiv vorbereitet hatte, stellte fest, dass die Prüfung, obwohl sie als schwer galt, keine großen Schwierigkeiten bereitete.",
+      "Sie fragte sich, ob es möglich sei, dass die Menschen, die sie kannte, jemals verstehen würden, warum sie diesen Schritt gewagt hatte.",
+      "Weil die Zeit, die wir haben, begrenzt ist, sollten wir, sofern es uns möglich ist, jeden Augenblick nutzen, um das zu tun, was uns wirklich wichtig erscheint.",
+    ]
+  },
+  {
+    name:"Ironie",
+    definition:"Ironie bedeutet, das Gegenteil von dem zu sagen, was man meint. Der eigentliche Sinn erschließt sich aus dem Kontext oder Tonfall und ist oft spöttisch oder kritisch gemeint.",
+    sentences:[
+      "Das war ja wieder eine besonders kluge Idee von dir! (nach einem Fehler)",
+      "Was für ein herrliches Wetter! (bei strömendem Regen)",
+      "Sehr zuverlässig, wie immer. (zu jemandem, der zu spät kommt)",
+      "Oh, wie wunderbar – schon wieder Montag!",
+      "Das hast du wirklich elegant gelöst. (nach einem Missgeschick)",
+    ]
+  },
+  {
+    name:"Klimax",
+    definition:"Die Klimax ist eine Steigerungsreihe: Wörter oder Aussagen werden in aufsteigender Reihenfolge von Bedeutung oder Intensität angeordnet. Der letzte Begriff ist der stärkste oder bedeutungsvollste.",
+    sentences:[
+      "Ich kam, ich sah, ich siegte.",
+      "Ein Funke, ein Feuer, ein Inferno.",
+      "Er erschrak, er zitterte, er verlor das Bewusstsein.",
+      "Gut, besser, am besten – so lautet sein Motto.",
+      "Sie weinte, sie schrie, sie verzweifelte vollständig.",
+    ]
+  },
+  {
+    name:"Litotes",
+    definition:"Die Litotes ist eine Untertreibung, bei der etwas durch die Verneinung des Gegenteils ausgedrückt wird. Sie betont oft das Gegenteil des Gesagten und wirkt bescheiden oder ironisch.",
+    sentences:[
+      "Das war nicht schlecht! (= Das war sehr gut.)",
+      "Er ist nicht der Dümmste. (= Er ist ziemlich klug.)",
+      "Das ist nicht uninteressant. (= Das ist durchaus interessant.)",
+      "Das ist nicht ohne. (= Das ist beeindruckend schwierig.)",
+      "Sie ist keine Unbekannte in der Branche. (= Sie ist sehr bekannt.)",
+    ]
+  },
+  {
+    name:"Metapher",
+    definition:"Die Metapher ist ein sprachliches Bild, das einen Begriff durch einen anderen ersetzt, ohne ein explizites Vergleichswort wie 'wie' zu verwenden. Die Übertragung geschieht direkt und implizit.",
+    sentences:[
+      "Das Schiff des Lebens führt uns durch Stürme und stille Gewässer.",
+      "Er ist ein Fuchs – immer auf der Jagd nach dem besten Vorteil.",
+      "Die Zeit ist ein Dieb, der uns die schönsten Momente stiehlt.",
+      "Das Feuer der Leidenschaft brannte in ihren Augen.",
+      "Im Herbst seiner Jahre wurde er nachdenklicher und stiller.",
+    ]
+  },
+  {
+    name:"Neologismus",
+    definition:"Ein Neologismus ist ein neu gebildetes oder aus einer Fremdsprache entlehntes Wort, das eine neue Sache, Handlung oder Idee bezeichnet. Neologismen entstehen oft durch technischen oder gesellschaftlichen Wandel.",
+    sentences:[
+      "Er hat den ganzen Abend gegoogelt, um die Antwort zu finden.",
+      "Das Selfie von gestern Abend hat bereits 500 Likes bekommen.",
+      "Der Shitstorm im Internet nach seiner Aussage war nicht vorherzusehen.",
+      "Fremdschämen ist ein typisch deutsches Phänomen.",
+      "Sie musste das Meeting leider kurzfristig canceln.",
+    ]
+  },
+  {
+    name:"Oxymoron",
+    definition:"Das Oxymoron verbindet zwei einander widersprechende Begriffe zu einer Einheit. Es schafft einen scheinbaren Widerspruch, der dennoch einen Sinn ergibt und oft tiefgründig oder poetisch wirkt.",
+    sentences:[
+      "Das war ein beredtes Schweigen zwischen ihnen.",
+      "Er pflegte bittersüße Erinnerungen an jene Zeit.",
+      "Ihr Lächeln war eine eisige Wärme.",
+      "Das offene Geheimnis war bald jedem bekannt.",
+      "In lebendiger Stille saßen sie beieinander.",
+    ]
+  },
+  {
+    name:"Paradoxon",
+    definition:"Das Paradoxon ist eine Aussage, die auf den ersten Blick widersprüchlich oder absurd erscheint, bei näherer Betrachtung aber eine tiefere Wahrheit oder Einsicht enthüllt.",
+    sentences:[
+      "Ich weiß, dass ich nichts weiß. (Sokrates)",
+      "Weniger ist mehr.",
+      "Nur wer sich verliert, kann sich finden.",
+      "Im Sterben liegt das Leben.",
+      "Der kürzeste Weg zu sich selbst führt um die ganze Welt herum.",
+    ]
+  },
+  {
+    name:"Parallelismus",
+    definition:"Beim Parallelismus werden mehrere Sätze oder Satzteile in derselben grammatischen Struktur aufgebaut. Die Parallele in der Form unterstreicht die inhaltliche Verbindung oder den Kontrast.",
+    sentences:[
+      "Der Kluge redet, weil er etwas zu sagen hat; der Dummkopf redet, weil er etwas sagen muss.",
+      "Dem Mutigen gehört die Welt, dem Feigen gehört die Angst.",
+      "Im Glück nicht übermütig, im Unglück nicht verzagt.",
+      "Er kam früh, er arbeitete hart, er ging spät.",
+      "Sie lernte für die Schule, er lernte für das Leben.",
+    ]
+  },
+  {
+    name:"Personifikation",
+    definition:"Die Personifikation verleiht nicht-menschlichen Dingen, Tieren oder abstrakten Begriffen menschliche Eigenschaften, Gefühle oder Handlungen. Dadurch werden sie lebendiger und anschaulicher.",
+    sentences:[
+      "Die Sonne lacht über den blühenden Feldern.",
+      "Der Wind flüstert Geheimnisse durch die Blätter.",
+      "Das Meer seufzte schwer unter der Last des nahenden Sturms.",
+      "Der Herbst malte die Blätter in leuchtendes Rot und Gold.",
+      "Die Hoffnung stirbt zuletzt.",
+    ]
+  },
+  {
+    name:"Pleonasmus",
+    definition:"Der Pleonasmus ist eine sprachliche Doppelung: Ein Wort enthält bereits die Bedeutung, die das zweite hinzufügt. Das Ergebnis ist eine inhaltliche Redundanz, die oft stilistisch oder unbeabsichtigt entsteht.",
+    sentences:[
+      "Der weiße Schimmel galoppierte majestätisch über die Wiese.",
+      "Der alte Greis saß schweigend im Schaukelstuhl.",
+      "Sie zeichnete einen runden Kreis auf das Papier.",
+      "Es fiel nasser Regen vom Himmel.",
+      "Er stieg die Treppe nach oben hinauf.",
+    ]
+  },
+  {
+    name:"Rhetorische Frage",
+    definition:"Die rhetorische Frage ist eine Frage, auf die keine Antwort erwartet wird. Sie dient dazu, eine Aussage zu bekräftigen, den Zuhörer zum Nachdenken zu bringen oder einen Standpunkt eindringlich zu unterstreichen.",
+    sentences:[
+      "Wer hat nicht schon einmal einen Fehler gemacht?",
+      "Glaubt ihr wirklich, dass das so einfach ist?",
+      "Haben wir denn nichts aus der Geschichte gelernt?",
+      "Ist das etwa gerecht?",
+      "Was nützt das schönste Haus, wenn das Dach undicht ist?",
+    ]
+  },
+  {
+    name:"Symbol",
+    definition:"Ein Symbol ist ein konkretes Bild oder ein Gegenstand, der über seinen wörtlichen Sinn hinaus auf eine abstrakte Idee, einen Wert oder eine tiefere Bedeutung verweist.",
+    sentences:[
+      "Die Taube über dem Trümmerfeld gab den Menschen Hoffnung auf Frieden.",
+      "Er überreichte ihr schweigend eine rote Rose – mehr Worte brauchte er nicht.",
+      "Die Eule auf dem Buchdeckel zeigte: Hier verbirgt sich altes Wissen.",
+      "Das Grün des Frühlings ließ alle an Neuanfang und Hoffnung denken.",
+      "Die Kette um seinen Hals war mehr als Schmuck – sie band ihn an seine Vergangenheit.",
+    ]
+  },
+  {
+    name:"Vergleich",
+    definition:"Der Vergleich stellt zwei Dinge einander gegenüber, um Ähnlichkeiten hervorzuheben. Er wird durch explizite Vergleichswörter wie 'wie' oder 'als' ausgedrückt und macht Eigenschaften anschaulich.",
+    sentences:[
+      "Er ist stark wie ein Bär.",
+      "Sie singt wie eine Nachtigall.",
+      "Das Leben ist wie eine Reise ins Ungewisse.",
+      "Er läuft schneller als der Wind.",
+      "Das Herz schlug schnell wie eine Trommel.",
+    ]
+  },
+];
+
+const TOTAL = 20;
+
+let state = {
+  screen:'home',
+  mode:null,
+  questions:[],
+  current:0,
+  score:0,
+  answered:false,
+  selected:null,
+};
+
+function shuffle(a){
+  const b=[...a];
+  for(let i=b.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [b[i],b[j]]=[b[j],b[i]];
+  }
+  return b;
+}
+
+function buildQuestions(mode){
+  const pool=shuffle(FIGURES);
+  return Array.from({length:TOTAL},(_, i)=>{
+    const fig=pool[i%pool.length];
+    const wrong=shuffle(FIGURES.filter(f=>f.name!==fig.name)).slice(0,3).map(f=>f.name);
+    const options=shuffle([fig.name,...wrong]);
+    if(mode==='satz'){
+      const s=fig.sentences[Math.floor(Math.random()*fig.sentences.length)];
+      return{text:s,answer:fig.name,options,label:'Welches Stilmittel liegt vor?',isSatz:true};
+    }else{
+      return{text:fig.definition,answer:fig.name,options,label:'Um welches Stilmittel handelt es sich?',isSatz:false};
+    }
+  });
+}
+
+function resultMsg(score){
+  const p=score/TOTAL;
+  if(p>=.9)return'Ausgezeichnet! Du bist ein Stilmittel-Experte.';
+  if(p>=.75)return'Sehr gut! Du kennst dich wirklich aus.';
+  if(p>=.6)return'Gut gemacht! Mit etwas Übung wird\'s perfekt.';
+  if(p>=.4)return'Nicht schlecht – weiterüben lohnt sich!';
+  return'Weitermachen! Du wirst immer besser.';
+}
+
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+function renderHome(){
+  return`<div class="home-head">
+    <h1>Stilmittel Quiz</h1>
+    <p>Trainiere dein Wissen über rhetorische Figuren</p>
+  </div>
+  <div class="mode-grid">
+    <button class="mode-btn" onclick="start('satz')">
+      <div class="mode-chip">Modus 1</div>
+      <div class="mode-title">Satz &rarr; Figur</div>
+      <p class="mode-desc">Ein Beispielsatz wird gezeigt – erkenne das Stilmittel aus vier Optionen.</p>
+    </button>
+    <button class="mode-btn" onclick="start('definition')">
+      <div class="mode-chip">Modus 2</div>
+      <div class="mode-title">Definition &rarr; Figur</div>
+      <p class="mode-desc">Eine Definition wird gezeigt – nenne das passende Stilmittel.</p>
+    </button>
+  </div>
+  <p class="home-foot">23 Stilmittel &middot; ${TOTAL} Fragen pro Runde</p>`;
+}
+
+function renderQuiz(){
+  const q=state.questions[state.current];
+  const pct=(state.current/TOTAL)*100;
+  const isLast=state.current===TOTAL-1;
+
+  const opts=q.options.map(opt=>{
+    let cls='opt';
+    let dis='';
+    if(state.answered){
+      dis='disabled';
+      if(opt===q.answer)cls+=' correct';
+      else if(opt===state.selected)cls+=' wrong';
+    }
+    return`<button class="${cls}" ${dis} onclick="pick(${JSON.stringify(opt)})">${esc(opt)}</button>`;
+  }).join('');
+
+  const fbCls=state.answered?(state.selected===q.answer?'correct':'wrong'):'';
+  const fbMsg=state.answered
+    ?(state.selected===q.answer
+      ?'&#10003; Richtig!'
+      :`&#10007; Falsch. Richtige Antwort: <strong>${esc(q.answer)}</strong>`)
+    :'';
+
+  const textHtml=q.isSatz
+    ?`<div class="q-text sentence">${esc(q.text).replace(/\n/g,'<br>')}</div>`
+    :`<div class="q-text">${esc(q.text)}</div>`;
+
+  return`<button class="back-link" onclick="home()">&#8592; Menü</button>
+  <div class="quiz-bar">
+    <span>Frage ${state.current+1} / ${TOTAL}</span>
+    <span class="quiz-score">${state.score} Punkte</span>
+  </div>
+  <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+  <div class="q-card">
+    <div class="q-label">${q.label}</div>
+    ${textHtml}
+  </div>
+  <div class="options">${opts}</div>
+  <div class="feedback ${fbCls}${state.answered?' show':''}">${fbMsg}</div>
+  <button class="next-btn${state.answered?' show':''}" onclick="next()">
+    ${isLast?'Ergebnis anzeigen':'Nächste Frage &rarr;'}
+  </button>`;
+}
+
+function renderResults(){
+  const pct=Math.round((state.score/TOTAL)*100);
+  const wrong=TOTAL-state.score;
+  return`<div class="res-card">
+    <div class="res-title">Quiz abgeschlossen!</div>
+    <div class="pct">${pct}%</div>
+    <div class="pct-sub">${state.score} von ${TOTAL} richtig</div>
+    <div class="res-msg">${resultMsg(state.score)}</div>
+    <div class="stat-row">
+      <div class="stat"><div class="stat-n c">${state.score}</div><div class="stat-l">Richtig</div></div>
+      <div class="stat"><div class="stat-n w">${wrong}</div><div class="stat-l">Falsch</div></div>
+      <div class="stat"><div class="stat-n t">${TOTAL}</div><div class="stat-l">Gesamt</div></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-p" onclick="start(${JSON.stringify(state.mode)})">Nochmal spielen</button>
+      <button class="btn-s" onclick="home()">Menü</button>
+    </div>
+  </div>`;
+}
+
+function render(){
+  const app=document.getElementById('app');
+  if(state.screen==='home') app.innerHTML=renderHome();
+  else if(state.screen==='quiz') app.innerHTML=renderQuiz();
+  else app.innerHTML=renderResults();
+}
+
+function start(mode){
+  state={screen:'quiz',mode,questions:buildQuestions(mode),current:0,score:0,answered:false,selected:null};
+  render();
+}
+
+function pick(opt){
+  if(state.answered)return;
+  state.answered=true;
+  state.selected=opt;
+  if(opt===state.questions[state.current].answer)state.score++;
+  render();
+}
+
+function next(){
+  if(state.current===TOTAL-1){state.screen='results';}
+  else{state.current++;state.answered=false;state.selected=null;}
+  render();
+}
+
+function home(){state.screen='home';render();}
+
+render();
+</script>
+</body>
+</html>
