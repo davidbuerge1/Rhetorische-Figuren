@@ -360,7 +360,7 @@ function shuffle(a){
 
 function buildQuestions(mode){
   const pool=shuffle(FIGURES);
-  return Array.from({length:TOTAL},(_, i)=>{
+  return shuffle(Array.from({length:TOTAL},(_, i)=>{
     const fig=pool[i%pool.length];
     const wrong=shuffle(FIGURES.filter(f=>f.name!==fig.name)).slice(0,3).map(f=>f.name);
     const options=shuffle([fig.name,...wrong]);
@@ -370,7 +370,7 @@ function buildQuestions(mode){
     }else{
       return{text:fig.definition,answer:fig.name,options,label:'Um welches Stilmittel handelt es sich?',isSatz:false};
     }
-  });
+  }));
 }
 
 function resultMsg(score){
@@ -417,7 +417,7 @@ function renderQuiz(){
       if(opt===q.answer)cls+=' correct';
       else if(opt===state.selected)cls+=' wrong';
     }
-    return`<button class="${cls}" ${dis} onclick="pick(${JSON.stringify(opt)})">${esc(opt)}</button>`;
+    return`<button class="${cls}" ${dis} onclick='pick(${JSON.stringify(opt)})'>${esc(opt)}</button>`;
   }).join('');
 
   const fbCls=state.answered?(state.selected===q.answer?'correct':'wrong'):'';
@@ -462,7 +462,7 @@ function renderResults(){
       <div class="stat"><div class="stat-n t">${TOTAL}</div><div class="stat-l">Gesamt</div></div>
     </div>
     <div class="btn-row">
-      <button class="btn-p" onclick="start(${JSON.stringify(state.mode)})">Nochmal spielen</button>
+      <button class="btn-p" onclick='start(${JSON.stringify(state.mode)})'>Nochmal spielen</button>
       <button class="btn-s" onclick="home()">Menü</button>
     </div>
   </div>`;
